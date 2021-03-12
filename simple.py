@@ -13,7 +13,7 @@ for line in lines:
         count = True
         continue
     if count:
-        data.append(line.split(',')[1])  # adding to array data of second channel
+        data.append(line.split(',')[1])  # adding data of [1] channel to array 
 
 # Filter
 wavelets = pywt.wavedec(data, 'db4', level=3)
