@@ -9,7 +9,7 @@ lines = file.readlines()
 count = False
 data = []
 for line in lines:
-    if line.strip() == "[Data]":  # start reading after "[Data]" line
+    if line.strip() == "[Data]":  # start processing after "[Data]" line
         count = True
         continue
     if count:
