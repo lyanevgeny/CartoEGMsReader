@@ -23,7 +23,7 @@ def get_channels(filename):
             newline = np.fromstring(line, dtype=int, sep=',')
             # adding data of the current sample to channel matrix
             channels = np.append(channels,[newline], axis=0)
-            if i > 10000:
+            if i > 15000:
                 break
 
     # transpose channel matrix and return
@@ -41,7 +41,11 @@ def plot_channels(channels):
 
         # axs[i].set_title ("Channel #")
         # axs[i].get_xaxis ().set_visible (True)
-        axs[i].get_yaxis ().set_visible (False)
+        # axs[i].set_xticks ([])
+        # axs[i].get_yaxis ().set_visible (False)
+        axs[i].axis('off')
+
+
     # plt.grid(True)
     plt.show()
 
@@ -49,10 +53,10 @@ def plot_channels(channels):
 
 def main():
 
-    number_of_channels, samples_per_channel, raw_channels = get_channels('ecg.txt')
+    number_of_channels, samples_per_channel, channels = get_channels('ecg.txt')
 
     # Output
-    plot_channels(raw_channels)
+    plot_channels(channels)
 
 
 if __name__ == '__main__':
