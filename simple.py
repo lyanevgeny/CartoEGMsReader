@@ -2,20 +2,67 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pywt
 
-def get_channels(filename):
-    # returns the matrix of all channels and axillary info
+
+def get_channels(filename):  # returns the matrix of all channels and axillary info
+
+    # the header data will be returned as a python dictionary with following structure
+    header = {
+        "file_type": "",
+        "version": "",
+        "channels_exported": "",
+        "samples_per_channel": "",
+        "start_time": "",
+        "end_time": "",
+        "ch_info_pointer": "",
+        "stamp_data": "",
+        "mux_format": "",
+        "mux_block_size": "",
+        "data_format": "",
+        "sample_rate": "",
+        "channel_info": [
+            {
+                "channel_nr": "",
+                "label": "",
+                "range": "",
+                "low": "",
+                "high": "",
+                "sample_rate": ""
+            }
+        ]
+    }
 
     # Open a file
-    file = open ('ecg.txt', 'r')
-    lines = file.readlines ()
-    number_of_channels = 28             # TODO write a code to infer number of channels and samples
-    samples_per_channel = 60000         # TODO write a code to infer the labels for channels
-    # Search for data
-    count = False
+    file = open(filename, 'r')
+    lines = file.readlines()
 
-    channels = np.empty((0,number_of_channels), int) # initialize channel matrix
+    # Read the header
+    for line in lines:
+        if line.strip() == "[Header]":
+            continue
+        if line[:11] == "Data Format":
+            header["data_format"] = line[12:].strip()
+            continue
+        if line[:9] == "Channel #":
+            # TODO write a code to infer the labels and other data for channels
+            break
+        else:
+            subline = line.split(':', 1)
+            var = subline[0].strip().lower().replace(" ", "_").replace(".", "")
+            val = subline[1].strip().replace(" ", "_").replace(".", "")
+            try:
+                val = int(val)
+            except ValueError:
+                print("Can't convert "+val+" to int")
+            header[var] = val
+
+    print(header)
+    number_of_channels = header["channels_exported"]
+
+    # Search for ecg data
+    count = False
+    channels = np.empty((0, number_of_channels), int) # initialize channel matrix
     for i, line in enumerate(lines):
-        if line.strip () == "[Data]":  # start processing after "[Data]" line
+        if line.strip() == "[Data]":  # start processing after "[Data]" line
             count = True
             continue
         if count:
@@ -27,9 +74,11 @@ def get_channels(filename):
                 break
 
     # transpose channel matrix and return
-    return number_of_channels, samples_per_channel, channels.T
+    return header, channels.T
+
 
 def plot_channels(channels):
+
     # Visualization of all channels
     fig = plt.figure ()
     gs = fig.add_gridspec (len(channels), hspace=0)
@@ -45,15 +94,16 @@ def plot_channels(channels):
         # axs[i].get_yaxis ().set_visible (False)
         axs[i].axis('off')
 
-
     # plt.grid(True)
     plt.show()
 
 
-
 def main():
 
-    number_of_channels, samples_per_channel, channels = get_channels('ecg.txt')
+    header, channels = get_channels('ecg.txt')
+    number_of_channels = header["channels_exported"]
+    samples_per_channel = header["samples_per_channel"]
+    print(number_of_channels, samples_per_channel)
 
     # Output
     plot_channels(channels)
@@ -61,6 +111,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
