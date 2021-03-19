@@ -36,15 +36,18 @@ def get_channels(filename):  # returns the matrix of all channels and axillary i
     lines = file.readlines()
 
     # Read the header
+    current_channel = 0
     for line in lines:
-        if line.strip() == "[Header]":
+        if line.strip() == "[Data]":
+            break
+        if line.strip() == "[Header]" or line.strip() == "":
             continue
         if line[:11] == "Data Format":
             header["data_format"] = line[12:].strip()
             continue
         if line[:9] == "Channel #":
-            # TODO write a code to infer the labels and other data for channels
-            break
+            current_channel = int(line[10:].strip())
+            header["channel_info"].append(dict(channel_nr=current_channel, label="", range="", low="", high="", sample_rate=""))
         else:
             subline = line.split(':', 1)
             var = subline[0].strip().lower().replace(" ", "_").replace(".", "")
@@ -52,10 +55,14 @@ def get_channels(filename):  # returns the matrix of all channels and axillary i
             try:
                 val = int(val)
             except ValueError:
-                print("Can't convert "+val+" to int")
-            header[var] = val
+                # print("Can't convert " + val + " to int")
+                pass
+            if current_channel == 0:
+                header[var] = val
+            else:
+                pass
+                header["channel_info"][current_channel][var] = val
 
-    print(header)
     number_of_channels = header["channels_exported"]
 
     # Search for ecg data
@@ -101,9 +108,13 @@ def plot_channels(channels):
 def main():
 
     header, channels = get_channels('ecg.txt')
+
     number_of_channels = header["channels_exported"]
     samples_per_channel = header["samples_per_channel"]
-    print(number_of_channels, samples_per_channel)
+    label_of_channel_23 = header["channel_info"][23]["label"]
+    color_of_channel_14 = header["channel_info"][14]["color"]
+
+    print(number_of_channels, samples_per_channel, label_of_channel_23, color_of_channel_14)
 
     # Output
     plot_channels(channels)
