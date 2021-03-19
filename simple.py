@@ -60,7 +60,6 @@ def get_channels(filename):  # returns the matrix of all channels and axillary i
             if current_channel == 0:
                 header[var] = val
             else:
-                pass
                 header["channel_info"][current_channel][var] = val
 
     number_of_channels = header["channels_exported"]
