@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import pywt
 
 
@@ -113,7 +114,6 @@ def plot_channels(channels, header):
     samples_count = header["sample_count"]
     # label_of_channel_7 = header["channel_info"][7]["label"]
     # color_of_channel_18 = header["channel_info"][18]["color"]
-    print(channels_returned, channels_count, samples_count)
 
     # Visualization of all channels
     fig = plt.figure()
@@ -140,6 +140,16 @@ def plot_channels(channels, header):
     plt.show()
 
 
+def plot_graph(dataset):
+    # Visualization on single graph
+    fig, axs = plt.subplots(2)
+    fig.suptitle("Correlation")
+    axs[0].plot(dataset[0][0])
+    axs[0].plot(dataset[1][0])
+    axs[1].plot(dataset[2][0])
+    plt.show()
+
+
 # custom range function
 def r(start, end):
     return range(start, end+1)
@@ -152,12 +162,24 @@ def main():
     # - optionally specify the sample range as start and/or end sample
 
     # channels, header = get_channels('ecg.txt', end=5000)
-    # channels, header = get_channels('ecg.txt', 3, start=800, end=1400)
+    # channels, header = get_channels('ecg.txt', 3, start=50000, end=50900)
+    # channels, header = get_channels('ecg.txt', 3, start=50100, end=60000)
     channels, header = get_channels('ecg.txt', (1, 2, *r(6, 9), *r(18, 19)), start=5000, end=10000)
 
     # Output
     plot_channels(channels, header)
 
 
+def correlate():
+    # Rolling window correlation
+    d1 = get_channels('ecg.txt', 1, start=50000, end=50900)[0]
+    d2 = get_channels('ecg.txt', 2, start=50000, end=50900)[0]
+    df = pd.DataFrame({'d1': d1[0],
+                       'd2': d2[0]})
+    cor = df['d1'].rolling(3).corr(df['d2'])
+    plot_graph([d1, d2, [cor.tolist()]])
+
+
 if __name__ == '__main__':
-    main()
+    # main()
+    correlate()
