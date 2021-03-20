@@ -88,7 +88,7 @@ def get_channels(filename, channel_range=None, start=0, end=None):
         end = header["samples_per_channel"]
 
     # additional data for returned header
-    header["channels_returned"] = list(channel_range) if channel_range else list(range(1, header["channels_exported"]+1))
+    header["channels"] = list(channel_range) if channel_range else list(range(1, header["channels_exported"]+1))
     header["sample_count"] = len(lines[separate_at + start:separate_at+end])
 
     # Search for ecg data
@@ -108,7 +108,7 @@ def plot_channels(channels, header):
 
     # examples of using the passed data
     ci = header["channel_info"]
-    channels_returned = header["channels_returned"]  # returns a list
+    channels_returned = header["channels"]  # returns a list
     channels_count = len(channels)
     samples_count = header["sample_count"]
     # label_of_channel_7 = header["channel_info"][7]["label"]
