@@ -157,7 +157,7 @@ def r(start, end):
 
 def main():
 
-    # get_channels() now has a versatile usage possibilities:
+    # get_channels() now has versatile usage possibilities:
     # - optionally specify the range of channels as single integer / separate integers in a tuple / as custom ranges *r() / combinations
     # - optionally specify the sample range as start and/or end sample
 
