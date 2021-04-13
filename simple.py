@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pywt
+# import pywt
 
 
 def get_channels(filename, channel_range=None, start=0, end=None):
@@ -102,7 +102,7 @@ def get_channels(filename, channel_range=None, start=0, end=None):
         channels = np.append(channels, [newline], axis=0)
 
     # transpose channel matrix and return
-    return channels.T, header
+    return np.transpose(channels), header
 
 
 def plot_channels(channels, header):
