@@ -6,13 +6,19 @@ import matplotlib.pyplot as plt
 
 def get_contact_files(search_dir):
     file_list = []
-    for name in glob.glob(search_dir + '/*ContactForce.txt'):
-        result = re.search('(.*)_P(.*)_ContactForce.txt', name)
-        current_map = result.group(1).split('\\')[1]
-        current_point = result.group(2)
-        file_list.append(["{}_P{}_ECG_Export.txt".format(current_map, current_point), "{}_P{}_ContactForce.txt".format(current_map, current_point)])
+    glob_result = glob.glob(search_dir + '/*ContactForce.txt')
+    if glob_result:
+        for name in glob.glob(search_dir + '/*ContactForce.txt'):
+            result = re.search('(.*)_P(.*)_ContactForce.txt', name)
+            current_map = result.group(1).split('\\')[1]
+            current_point = result.group(2)
+            if glob.glob(search_dir + "/{}_P{}_ECG_Export.txt".format(current_map, current_point)):
+                file_list.append(["{}_P{}_ECG_Export.txt".format(current_map, current_point),
+                                  "{}_P{}_ContactForce.txt".format(current_map, current_point)])
+            else:
+                print("The corresponding ECG file not found for "+name)
     print(str(len(file_list)) + " ContactForce files found.")
-    return np.transpose(file_list)
+    return np.transpose(file_list) if file_list else None
 
 
 def get_contact_data(filename):
@@ -41,7 +47,7 @@ def plot_force_data(data):
 
 
 if __name__ == '__main__':
-    
+
     # 1. specify directory with Carto files
     folder = 'data1'
 
@@ -49,7 +55,7 @@ if __name__ == '__main__':
     files = get_contact_files(folder)
 
     # 3. process files (plot each file)
-    for i, f in enumerate(files[1]):
-        if i < 3:  # limit 3
-            plot_force_data(get_contact_data(folder+'/'+f))
-
+    if files is not None:
+        for i, f in enumerate(files[1]):
+            if i < 3:  # limit 3
+                plot_force_data(get_contact_data(folder + '/' + f))
