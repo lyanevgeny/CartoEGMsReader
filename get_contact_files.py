@@ -37,6 +37,40 @@ def get_contact_data(filename):
     return np.transpose(contact_data)
 
 
+def get_ecg_data(filename):
+    file = open(filename, 'r')
+    lines = file.readlines()
+    read_data = False
+    channels = np.empty((0, 3), int)
+
+    for i, line in enumerate(lines):
+
+        if read_data:
+            newline = np.fromstring(line, dtype=int, sep=' ')
+            newline = [newline[uni_index], newline[bi_index], newline[ref_index]]
+            channels = np.append(channels, [newline], axis=0)
+
+        if i == 2:
+            result = re.search(
+                'Unipolar Mapping Channel=(.*) Bipolar Mapping Channel=(.*) Reference Channel=(.*)', line)
+            if result:
+                uni_map_ch = result.group(1)
+                bi_map_ch = result.group(2)
+                ref_ch = result.group(3)
+
+        if i == 3:
+            read_data = True
+            channel_names = line.split()
+            for i, c in enumerate(channel_names):
+                result = re.search('(.*)\(.', c)
+                channel_names[i] = result.group(1)
+            uni_index = channel_names.index(uni_map_ch)
+            bi_index = channel_names.index(bi_map_ch)
+            ref_index = channel_names.index(ref_ch)
+
+    return np.transpose(channels)
+
+
 def plot_force_data(data):
     s = list(data[3])
     fig, ax = plt.subplots()
@@ -44,6 +78,12 @@ def plot_force_data(data):
     ax.set(title='Contact force data')
     ax.grid()
     plt.show()
+
+
+def create_merged_array(contact_data_file, ecg_data_file):
+    cf_array = get_contact_data(contact_data_file)
+    ecg_array = get_ecg_data(ecg_data_file)
+    # code to join to a single array
 
 
 if __name__ == '__main__':
@@ -59,3 +99,4 @@ if __name__ == '__main__':
         for i, f in enumerate(files):
             if i < 3:  # limit 3
                 plot_force_data(get_contact_data(f[0]))
+                create_merged_array(f[0], f[1])
