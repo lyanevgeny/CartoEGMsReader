@@ -12,13 +12,13 @@ def get_contact_files(search_dir):
             result = re.search('(.*)_P(.*)_ContactForce.txt', name)
             current_map = result.group(1).split('\\')[1]
             current_point = result.group(2)
-            if glob.glob(search_dir + "/{}_P{}_ECG_Export.txt".format(current_map, current_point)):
-                file_list.append(["{}_P{}_ECG_Export.txt".format(current_map, current_point),
-                                  "{}_P{}_ContactForce.txt".format(current_map, current_point)])
+            corresponding_ecg_file = search_dir + "\\{}_P{}_ECG_Export.txt".format(current_map, current_point)
+            if glob.glob(corresponding_ecg_file):
+                file_list.append([name, corresponding_ecg_file])
             else:
                 print("The corresponding ECG file not found for "+name)
-    print(str(len(file_list)) + " ContactForce files found.")
-    return np.transpose(file_list) if file_list else None
+    print(str(len(file_list)) + " ContactForce files with corresponding ECG files found.")
+    return file_list if file_list else None
 
 
 def get_contact_data(filename):
@@ -56,6 +56,6 @@ if __name__ == '__main__':
 
     # 3. process files (plot each file)
     if files is not None:
-        for i, f in enumerate(files[1]):
+        for i, f in enumerate(files):
             if i < 3:  # limit 3
-                plot_force_data(get_contact_data(folder + '/' + f))
+                plot_force_data(get_contact_data(f[0]))
