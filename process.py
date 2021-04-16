@@ -125,7 +125,7 @@ if __name__ == '__main__':
     #    set limit for faster processing
     contact_files, ecg_files = get_files(folder, lim=1)
 
-    # 3. process files
+    # 3. process each file pair
     for cf, ef in zip(contact_files, ecg_files):
 
         # plot merged data from both files
