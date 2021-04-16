@@ -23,7 +23,7 @@ def get_files(search_dir, lim=None):
                 else:
                     print("The corresponding ECG file not found for "+name)
     print("{} ContactForce files with corresponding ECG files found, limit to {}."
-          .format(len(glob_result), lim))
+          .format(len(contact_file_list), lim))
     return contact_file_list, ecg_file_list
 
 
@@ -125,7 +125,7 @@ if __name__ == '__main__':
     #    set limit for faster processing
     contact_files, ecg_files = get_files(folder, lim=1)
 
-    # 3. process each file pair
+    # 3. process files
     for cf, ef in zip(contact_files, ecg_files):
 
         # plot merged data from both files
