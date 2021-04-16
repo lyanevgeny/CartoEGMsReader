@@ -22,8 +22,8 @@ def get_files(search_dir, lim=None):
                     count += 1
                 else:
                     print("The corresponding ECG file not found for "+name)
-    print("{} ContactForce files with corresponding ECG files found, limit to {}."
-          .format(len(contact_file_list), lim))
+    print("{} ContactForce files with corresponding ECG files found (limit set to {})."
+          .format(count, lim))
     return contact_file_list, ecg_file_list
 
 
