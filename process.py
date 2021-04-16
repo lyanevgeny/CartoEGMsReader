@@ -27,20 +27,23 @@ def get_files(search_dir, lim=None):
     return contact_file_list, ecg_file_list
 
 
-def get_contact_data(filename, start=150):  # positive time values start after index 150
+def get_contact_data(filename, start=150, cols=[1, 3]):
+    # positive time values start after index 150
+    # col 1 is obligatory for timing data, col 3 contains ForceValue
     file = open(filename, 'r')
     lines = file.readlines()
     read_data = False
-    contact_data = np.empty((0, 9), int)
+    contact_data = np.empty((0, len(cols)), int)
 
     for i, line in enumerate(lines):
         if read_data:
             newline = np.fromstring(line, dtype=float, sep=' ')
+            newline = np.take(newline, cols, 0)
             contact_data = np.append(contact_data, [newline], axis=0)
-        if i == 7:
+        if i == 7+start:
             read_data = True
 
-    return np.transpose(contact_data[start:])
+    return np.transpose(contact_data)
 
 
 def get_ecg_data(filename):
@@ -78,6 +81,27 @@ def get_ecg_data(filename):
     return channels
 
 
+def process_files(contact_data_file, ecg_data_file, mode="merge"):
+
+    if mode == "merge":  # merge Contact Force and ECG data according to "Time" column in ContactForce file
+        cf_array = get_contact_data(contact_data_file)
+        ecg_array = get_ecg_data(ecg_data_file)
+
+        time_array = cf_array[0].astype(int)
+        time_array = time_array[time_array >= 0]
+        cf_array = cf_array[1:]
+
+        ecg_array = np.transpose(ecg_array[time_array])
+
+        merged_array = np.append(cf_array, ecg_array, axis=0)
+        return merged_array
+
+    if mode == "mean":
+        ecg_array = np.transpose(get_ecg_data(ecg_data_file))
+        cf_array = get_contact_data(contact_data_file)
+        return ecg_array, np.mean(cf_array[1])
+
+
 def plot_data(data, suptitle="", titles=None):
     channels_count = len(data)
     graph = plt.figure()
@@ -90,29 +114,6 @@ def plot_data(data, suptitle="", titles=None):
             if titles:
                 axs[i].set_title(titles[i], loc='left', y=1)
     plt.show()
-
-
-def process_files(contact_data_file, ecg_data_file, mode="merge"):
-
-    if mode == "merge":  # merge Contact Force and ECG data according to "Time" column in ContactForce file
-        cf_array = get_contact_data(contact_data_file)
-        ecg_array = get_ecg_data(ecg_data_file)
-
-        time_array = cf_array[1].astype(int)
-        time_array = time_array[time_array >= 0]
-
-        ecg_array = np.transpose(ecg_array[time_array])
-
-        cf_interest = [3]
-        cf_array = np.transpose(cf_array[cf_interest])
-        cf_array = np.transpose(cf_array)
-
-        merged_array = np.append(cf_array, ecg_array, axis=0)
-        return merged_array
-
-    if mode == "mean":
-        cf_array = get_contact_data(contact_data_file)
-        return np.mean(cf_array[3])
 
 
 if __name__ == '__main__':
@@ -128,12 +129,16 @@ if __name__ == '__main__':
     # 3. process files
     for cf, ef in zip(contact_files, ecg_files):
 
+        # example 1
+        # get full ECG and mean of ForceValue
+        ecg, mean = process_files(cf, ef, mode="mean")
+        plot_data(ecg,
+                  suptitle="ECG from {}. Mean CF {}.".format(ef, mean),
+                  titles=["Uni", "Bi", "Ref"])
+
+        # example 2
         # plot merged data from both files
         merged_data = process_files(cf, ef, mode="merge")
         plot_data(merged_data,
-                  suptitle="Merged data from {}".format(cf[:16]),
+                  suptitle="Simultaneous data from {}.".format(cf[:-17]),
                   titles=["ContactForce", "Unipolar", "Bipolar", "Reference"])
-
-        # get mean of ForceValue
-        mean = process_files(cf, ef, mode="mean")
-        print("In '{}': mean of ForceValue in is {}.".format(cf, mean))
