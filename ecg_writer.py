@@ -35,6 +35,7 @@ def get_ecg_data(filename, ders):
                 channel_names[j] = result.group(1)
             for k, d in enumerate(derivations):
                 indices["d%s_index" % k] = channel_names.index(derivations["d" + str(k)])
+
     return np.transpose(channels), ders  # return ecg data and lead names
 
 
@@ -47,14 +48,14 @@ def make_longer(array, multiply):
             new = np.append(new, [dummy_array], axis=0)
         else:
             empty_array = np.zeros(7500)
-            empty_array[:7499] = np.nan  # to hide the last part of plot
+            empty_array[:7450] = np.nan  # to hide the last part of plot
             new_array = np.concatenate((a, empty_array))
             new = np.append(new, [new_array], axis=0)
     return new, array[1]
 
 
 # annotations
-def draw_on_ecg(figure):
+def draw_on_ecg(figure, speed):
     canvas = figure.add_subplot()
 
     # add voltage marker
@@ -73,8 +74,8 @@ def draw_on_ecg(figure):
 
     # add bottom annotation line
     t3 = "GE   MAC1600          1.0.2           12SL v239" \
-         "                                 25mm/s    10 mm/mV" \
-         "                                 0.16-20 Hz    1000 Hz                              1/1"
+         "                                 {}mm/s    10 mm/mV" \
+         "                                 0.16-20 Hz    1000 Hz                              1/1".format(speed)
     canvas.text(0.085, 0.03, t3, size='19', transform=canvas.transAxes)
 
     # add black rectangle marker
@@ -83,29 +84,32 @@ def draw_on_ecg(figure):
 
 
 # plot ecg
-def plot_data(ecg_data):
+def plot_data(ecg_data, speed=0, fixed=True, scale=500):
     img = plt.imread("ecg-paper.jpg")
     graph = plt.figure(constrained_layout=True, figsize=(24.5, 17.4), dpi=90)
     plt.imshow(img)
     plt.axis('off')
     spec = graph.add_gridspec(14, hspace=0)
     axs = spec.subplots(sharex=True, sharey=True)
+    if speed == 0:
+        speed = int(250000/len(ecg_data[0][0]))
+    print(speed)
     for i in range(14):  # for all subplots
         axs[i].axis('off')
         axs[i].set_xmargin(0.1)
     if type(ecg_data[1]) == tuple:
         for i, d in enumerate(ecg_data[0]):
-            # axs[i + 1].set_ylim(-400, 400)
-            axs[i + 1].plot(d, 'k-', linewidth=1.5, clip_on=False)
+            axs[i + 1].set_ylim(-scale, scale) if not fixed else True
+            axs[i + 1].plot(d[:int(250000/speed)], 'k-', linewidth=1.7, clip_on=False)
             label = ecg_data[1][i]
-            axs[i + 1].annotate(label, (0, 300), size='19')
+            axs[i + 1].annotate(label, (0, 320), size='22')
     elif type(ecg_data[1]) == str:  # if a single lead was passed
-        axs[6].set_ylim(-300, 300)
-        axs[6].plot(ecg_data[0][0], 'k-', linewidth=1.5, clip_on=False)
+        print("here")
+        axs[6].set_ylim(-scale, scale) if not fixed else True
+        axs[6].plot(ecg_data[0][0][0:int(250000/speed)], 'k-', linewidth=1.7, clip_on=False)
         label = ecg_data[1]
-        axs[6].annotate(label, (0, 300), size='19')
-
-    draw_on_ecg(graph)
+        axs[6].annotate(label, (0, 500), size='22')
+    draw_on_ecg(graph, speed)
     plt.savefig('output.jpg', format='jpg')
     img = Image.open('output.jpg')
     img.show()
@@ -116,13 +120,21 @@ def plot_data(ecg_data):
 #####################
 
 # 1. Specify leads by their names in Carto-file
-leads = '20A_11-12'
-# leads = 'I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6'
+leads = 'I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6'
 
-# 2. Set Carto-file and lead parameter
+# 2. Create data array from Carto-file using lead parameter, set multiply to 10 seconds or (pseudo)crop with true/false
 data = get_ecg_data("data1/1-SR_P1_ECG_Export.txt", leads)
+data2 = get_ecg_data("data1/1-SR_P1181_ECG_Export.txt", 'CS6')
 
-# 3. Plot, optionally with make_longer(multiply) function to extend ecg to 10sek to make it more proportional
-plot_data(data)
-# plot_data(make_longer(data, False))
-# plot_data(make_longer(data, True))
+# 3. Plot, optionally with:
+# - make_longer(multiply) function to multiply tracing to 10 seconds or (pseuro)crop
+# Experimental functions:
+# - speed argument to make tracing proportional to paper speed
+# - fixed argument that makes spacing between leads even, but voltage goes down (must fix it later)
+# - scale argument to specify maximal y scale (works only if fixed = False; future update to adjust to paper scale required)
+
+# Example of rhythm strip
+plot_data(make_longer(data, True), speed=50, fixed=False)
+
+# Example of single lead
+plot_data(data2, fixed=False, scale=500)
