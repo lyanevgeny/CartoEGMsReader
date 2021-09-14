@@ -118,22 +118,25 @@ def plot_data(ecg_data, speed=0, fixed=True, scale=500):
 # Exec instructions #
 #####################
 
-# 1. Specify leads by their names in Carto-file
+# 1. Specify needed leads by their names in Carto file
 leads = 'I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6'
 
-# 2. Create data array from Carto-file using lead parameter, set multiply to 10 seconds or (pseudo)crop with true/false
+# 2. Create data array from Carto-file using path and lead selection parameter
 data = get_ecg_data("data1/1-SR_P1_ECG_Export.txt", leads)
 data2 = get_ecg_data("data1/1-SR_P1181_ECG_Export.txt", 'CS6')
 
 # 3. Plot, optionally with:
 # - make_longer(multiply) function to multiply tracing to 10 second duration (multiply=True) or pseudo-crop i.e. add 7500 ms of NaN (multiply=False)
-# Experimental functions:
+# Experimental functions (don't work flawless yet):
 # - speed argument to make tracing proportional to paper speed
 # - fixed argument that makes spacing between leads even, but voltage goes down (must fix it later)
-# - scale argument to specify maximal y scale (works only if fixed = False; future update to adjust to paper scale required)
+# - scale argument to specify maximal y scale (works only if fixed = False; future update to adjust scale to paper scale required)
 
-# Example of rhythm strip
+# Simple usage: will stretch given points to whole sheet
+plot_data(data)
+
+# Example of rhythm strip: repeats points, scales speed at approx. 50mm/s, allows extra space for higher voltage leads
 plot_data(make_longer(data, True), speed=50, fixed=False)
 
-# Example of single lead
+# Example of single lead: allows extra space, scales the y-axis
 plot_data(data2, fixed=False, scale=500)
