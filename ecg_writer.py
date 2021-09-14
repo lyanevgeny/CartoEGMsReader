@@ -126,7 +126,7 @@ data = get_ecg_data("data1/1-SR_P1_ECG_Export.txt", leads)
 data2 = get_ecg_data("data1/1-SR_P1181_ECG_Export.txt", 'CS6')
 
 # 3. Plot, optionally with:
-# - make_longer(multiply) function to multiply tracing to 10 seconds or (pseuro)crop
+# - make_longer(multiply) function to multiply tracing to 10 second duration (multiply=True) or pseudo-crop i.e. add 7500 ms of NaN (multiply=False)
 # Experimental functions:
 # - speed argument to make tracing proportional to paper speed
 # - fixed argument that makes spacing between leads even, but voltage goes down (must fix it later)
