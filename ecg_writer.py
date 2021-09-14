@@ -93,7 +93,6 @@ def plot_data(ecg_data, speed=0, fixed=True, scale=500):
     axs = spec.subplots(sharex=True, sharey=True)
     if speed == 0:
         speed = int(250000/len(ecg_data[0][0]))
-    print(speed)
     for i in range(14):  # for all subplots
         axs[i].axis('off')
         axs[i].set_xmargin(0.1)
