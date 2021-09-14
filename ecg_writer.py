@@ -48,7 +48,7 @@ def make_longer(array, multiply):
             new = np.append(new, [dummy_array], axis=0)
         else:
             empty_array = np.zeros(7500)
-            empty_array[:7450] = np.nan  # to hide the last part of plot
+            empty_array[:7499] = np.nan  # to hide the last part of plot
             new_array = np.concatenate((a, empty_array))
             new = np.append(new, [new_array], axis=0)
     return new, array[1]
